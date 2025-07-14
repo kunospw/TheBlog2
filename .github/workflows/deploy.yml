@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Remove old app.zip
+        run: rm -rf app.zip
+
       - name: Archive project
         run: zip -r app.zip . -x "*.git*" "node_modules/*" ".github/*"
 
@@ -45,9 +48,9 @@ jobs:
             set -e
             cd ~
             rm -rf express-class/
+            sudo apt install -y unzip
             unzip -o app.zip -d express-class
-            cd express-test
-
+            cd express-class
             cat <<EOF> .env
             JWT_SECRET_KEY= '${{ secrets.JWT_SECRET_KEY }}'
             GOOGLE_APP_PASSWORD= '${{ secrets.GOOGLE_APP_PASSWORD }}'
@@ -59,6 +62,8 @@ jobs:
             AWS_REGION= '${{ secrets.AWS_REGION }}'
             EOF
 
-            npm ci
+            sudo apt install -y nodejs npm
+            sudo npm ci
+            sudo npm i -g pm2
             pm2 delete all || true
             pm2 start index.js --name express-class
